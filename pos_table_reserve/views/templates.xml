@@ -1,0 +1,10 @@
+<odoo>
+    <data>
+        <template id="assets_pos_table_reserve" inherit_id="point_of_sale.assets">
+          <xpath expr="." position="inside">
+            <script type="text/javascript" src="/pos_table_reserve/static/src/js/pos_table_reserve.js" />
+            <link rel="stylesheet" href="/pos_table_reserve/static/src/css/pos_table_reserve.css" id="pos_table_reserve-stylesheet" />
+          </xpath>
+        </template>
+    </data>
+</odoo>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+
+    <t t-extend="FloorScreenWidget">
+        <t t-jquery='.color' t-operation='before'>
+            <span class='edit-button reserve needs-selection'>
+                <i class='fa fa-check'></i>
+            </span>
+            <span class='edit-button unreserve needs-selection'>
+                <i class='fa fa-close'></i>
+            </span>
+        </t>
+
+    </t>
+
+    <t t-extend="TableWidget">
+        <t t-jquery='.label' t-operation='replace'>
+            <span class='label'>
+                <t t-if="widget.table.reserve_note">
+                    <t t-esc="widget.table.name + ' / ' + ( widget.table.reserve_note)" />
+                </t>
+                <t t-else="">
+                    <t t-esc='widget.table.name' />
+                </t>
+            </span>
+        </t>
+    </t>
+
+</templates>
