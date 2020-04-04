@@ -15,7 +15,7 @@
 
     <t t-extend="TableWidget">
         <t t-jquery='.label' t-operation='replace'>
-            <span class='label'>
+            <span class='label' style="font-size:11px;">
                 <t t-if="widget.table.reserve_note">
                     <t t-esc="widget.table.name + ' / ' + ( widget.table.reserve_note)" />
                 </t>

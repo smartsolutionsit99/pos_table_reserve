@@ -20,6 +20,14 @@ odoo.define('pos_table_reserve.pos_table_reserve', function (require) {
             self.tables_by_id[tables[i].id] = tables[i];
             var floor = self.floors_by_id[tables[i].floor_id[0]];
             if (floor) {
+                floor.tables.pop(tables[i]);
+                tables[i].floor = false;
+            }
+        }
+        for (var i = 0; i < tables.length; i++) {
+            self.tables_by_id[tables[i].id] = tables[i];
+            var floor = self.floors_by_id[tables[i].floor_id[0]];
+            if (floor) {
                 floor.tables.push(tables[i]);
                 tables[i].floor = floor;
             }
