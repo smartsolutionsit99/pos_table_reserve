@@ -1,21 +1,33 @@
 odoo.define('pos_table_reserve.pos_table_reserve', function (require) {
  "use strict";
+
+    console.log("JS FILE");
     var PosBaseWidget = require('point_of_sale.BaseWidget');
     var chrome = require('point_of_sale.chrome');
     var gui = require('point_of_sale.gui');
     var models = require('point_of_sale.models');
     var screens = require('point_of_sale.screens');
     var core = require('web.core');
-    var Model = require('web.DataModel');
-
+    var rpc = require('web.rpc');
+    
     var QWeb = core.qweb;
     var _t = core._t;
+
 
     models.load_models({
     model: 'restaurant.table',
     fields: ['name','width','height','position_h','position_v','shape','floor_id','color','seats','color_org','reserved','reserve_note'],
     loaded: function(self,tables){
         self.tables_by_id = {};
+        for (var i = 0; i < tables.length; i++) {
+            self.tables_by_id[tables[i].id] = tables[i];
+            var floor = self.floors_by_id[tables[i].floor_id[0]];
+            if (floor) {
+                floor.tables.pop(tables[i]);
+                // floor.tables.push(tables[i]);
+                tables[i].floor = false;
+            }
+        }
         for (var i = 0; i < tables.length; i++) {
             self.tables_by_id[tables[i].id] = tables[i];
             var floor = self.floors_by_id[tables[i].floor_id[0]];
@@ -83,19 +95,17 @@ odoo.define('pos_table_reserve.pos_table_reserve', function (require) {
                 'cheap': true,
                 'value': '',
                 'confirm': function(note) {
-                    var model  = new Model('restaurant.table');
-                    self.selected_table.table.color_org = self.selected_table.table.color;
-                    self.selected_table.table.color = '#f72a3d';
-                    model.call('create_from_ui',[{'id':self.selected_table.table.id ,'reserved':true,'color':'#f72a3d' ,'color_org':self.selected_table.table.color,'reserve_note':note}]).then(function(table_id){
-                    }, function(err, event) {
-
-                        this.gui.show_popup('error', {
-                            'title':_t('Changes could not be saved'),
-                            'body': _t('You must be connected to the internet to save your changes.'),
+                    rpc.query({
+                        model: 'restaurant.table',
+                        method: 'write',
+                        args: [[self.selected_table.table.id], {'reserved':true,'color_org':self.selected_table.table.color,'reserve_note':note}],
+                        })
+                        .fail(function (type, err){
+                            self.gui.show_popup('error',{
+                                'title':_t('Changes could not be saved'),
+                                'body': _t('You must be connected to the internet to save your changes.'),
+                            });
                         });
-                        event.stopPropagation();
-                        event.preventDefault();
-                    });
                     self.selected_table.table.reserve_note = note;
                     self.selected_table.table.reserved = true;
                     self.renderElement();
@@ -106,16 +116,17 @@ odoo.define('pos_table_reserve.pos_table_reserve', function (require) {
         },
         tool_unreserve_table: function(){
             if (this.selected_table) {
-                var model  = new Model('restaurant.table');
-                model.call('create_from_ui',[{'id':this.selected_table.table.id ,'reserved':false,'color':this.selected_table.table.color_org,'reserve_note':''}]).then(function(table_id){
-                }, function(err, event) {
-                    this.gui.show_popup('error', {
-                        'title':_t('Changes could not be saved'),
-                        'body': _t('You must be connected to the internet to save your changes.'),
+                rpc.query({
+                    model: 'restaurant.table',
+                    method: 'write',
+                    args: [[this.selected_table.table.id], {'reserved':false,'color':this.selected_table.table.color_org,'reserve_note':''}],
+                    })
+                    .fail(function (type, err){
+                        self.gui.show_popup('error',{
+                            'title':_t('Changes could not be saved'),
+                            'body': _t('You must be connected to the internet to save your changes.'),
+                        });
                     });
-                    event.stopPropagation();
-                    event.preventDefault();
-                });
                 this.selected_table.table.reserve_note = '';
                 this.selected_table.table.color = this.selected_table.table.color_org
                 this.selected_table.table.reserved = false;
