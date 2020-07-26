@@ -100,11 +100,18 @@ odoo.define('pos_table_reserve.pos_table_reserve', function (require) {
                         method: 'write',
                         args: [[self.selected_table.table.id], {'reserved':true,'color_org':self.selected_table.table.color,'reserve_note':note}],
                         })
-                        .fail(function (type, err){
+                        .catch(function(error){
+                            error.event.preventDefault();
+                            var error_body = _t('Your Internet connection is probably down.');
+                            if (error.message.data) {
+                                var except = error.message.data;
+                                error_body = except.arguments && except.arguments[0] || except.message || error_body;
+                            }
                             self.gui.show_popup('error',{
-                                'title':_t('Changes could not be saved'),
-                                'body': _t('You must be connected to the internet to save your changes.'),
+                                'title': _t('Error: Could not Save Changes'),
+                                'body': error_body,
                             });
+                            contents.on('click','.button.save',function(){ self.save_client_details(partner); });
                         });
                     self.selected_table.table.reserve_note = note;
                     self.selected_table.table.reserved = true;
@@ -121,12 +128,19 @@ odoo.define('pos_table_reserve.pos_table_reserve', function (require) {
                     method: 'write',
                     args: [[this.selected_table.table.id], {'reserved':false,'color':this.selected_table.table.color_org,'reserve_note':''}],
                     })
-                    .fail(function (type, err){
-                        self.gui.show_popup('error',{
-                            'title':_t('Changes could not be saved'),
-                            'body': _t('You must be connected to the internet to save your changes.'),
-                        });
-                    });
+                    .catch(function(error){
+                            error.event.preventDefault();
+                            var error_body = _t('Your Internet connection is probably down.');
+                            if (error.message.data) {
+                                var except = error.message.data;
+                                error_body = except.arguments && except.arguments[0] || except.message || error_body;
+                            }
+                            self.gui.show_popup('error',{
+                                'title': _t('Error: Could not Save Changes'),
+                                'body': error_body,
+                            });
+                            contents.on('click','.button.save',function(){ self.save_client_details(partner); });
+                      });
                 this.selected_table.table.reserve_note = '';
                 this.selected_table.table.color = this.selected_table.table.color_org
                 this.selected_table.table.reserved = false;
